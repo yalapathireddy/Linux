@@ -1,0 +1,28 @@
+chmod +x create_lvm.sh
+
+To use this script:
+
+Run it as root: sudo ./create_lvm.sh
+Follow the prompts to enter:
+Device path (e.g., /dev/sdb)
+Volume group name
+Logical volume name
+Size (e.g., 10G)
+Mount point
+Example usage:
+
+
+$ sudo ./create_lvm.sh
+Enter device path: /dev/sdb
+Enter volume group name: data_vg
+Enter logical volume name: data_lv
+Enter size: 10G
+Enter mount point: /mnt/data
+
+The script will:
+
+Create the PV, VG, and LV
+Format the volume with ext4
+Mount it at the specified location
+Add an entry to /etc/fstab for persistence
+Display a summary of the operations
