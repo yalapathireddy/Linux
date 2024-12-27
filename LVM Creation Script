@@ -1,0 +1,65 @@
+#!/bin/bash
+
+# Function to check if running as root
+check_root() {
+    if [ "$EUID" -ne 0 ]; then
+        echo "Please run as root"
+        exit 1
+    fi
+}
+
+# Function to validate device exists
+validate_device() {
+    if [ ! -b "$1" ]; then
+        echo "Error: Device $1 does not exist or is not a block device"
+        exit 1
+    fi
+}
+
+# Main script starts here
+check_root
+
+# Get device input
+read -p "Enter device path (e.g., /dev/sdb): " device
+validate_device "$device"
+
+# Get VG name
+read -p "Enter volume group name: " vg_name
+
+# Get LV name
+read -p "Enter logical volume name: " lv_name
+
+# Get size
+read -p "Enter size (e.g., 10G): " size
+
+# Get mount point
+read -p "Enter mount point: " mount_point
+
+echo "Creating Physical Volume..."
+pvcreate "$device"
+
+echo "Creating Volume Group..."
+vgcreate "$vg_name" "$device"
+
+echo "Creating Logical Volume..."
+lvcreate -n "$lv_name" -L "$size" "$vg_name"
+
+echo "Creating filesystem..."
+mkfs.ext4 "/dev/$vg_name/$lv_name"
+
+echo "Creating mount point..."
+mkdir -p "$mount_point"
+
+echo "Mounting volume..."
+mount "/dev/$vg_name/$lv_name" "$mount_point"
+
+# Add entry to /etc/fstab for persistent mount
+echo "/dev/$vg_name/$lv_name $mount_point ext4 defaults 0 0" >> /etc/fstab
+
+echo "LVM setup complete!"
+echo "Summary:"
+echo "  Device: $device"
+echo "  Volume Group: $vg_name"
+echo "  Logical Volume: $lv_name"
+echo "  Size: $size"
+echo "  Mount Point: $mount_point"
